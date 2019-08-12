@@ -654,8 +654,10 @@ Resources:
       VpcId: !Ref VpcId
   DBInstance:
     Type: 'AWS::RDS::DBInstance'
+    DeletionPolicy: "Snapshot"
     Properties:
       DBName: !Ref DBName
+      DBSubnetGroupName: SysOpsDBSubnetGroup
       Engine: MySQL
       MultiAZ: !FindInMap [EnvironmentSettings, !Ref Environment, MultiAZDatabase]
       MasterUsername: !Ref DBUser
