@@ -1,5 +1,5 @@
 # wordpress-iac
-Installs and deploys WordPress into Dev and Prod environments on to Amazon EC2 instances in an Auto Scaling group with a multi-AZ Amazon RDS database instance for storage in Prod environment and single AZ RDS database instance for dev environment.
+Installs and deploys WordPress into Dev and Prod environments on to Amazon EC2 instances in an Auto Scaling group with a multi-AZ Amazon RDS database instance for storage in Prod environment and single AZ RDS database instance in dev environment.
 
 <h1><b>Prerequisite</b></h1> -
 
@@ -16,6 +16,14 @@ commands used - aws configure
 
 5. Create an ssh keypair in AWS account under EC2 -> Network & Security -> Key Pairs which will be required to connect to EC2 instances later. Name the key - amazon-servers, download.
 
+<h1><b>Architecture Diagram</b></h1> -
 
+![alt text](https://raw.githubusercontent.com/saurabhthareja90/wordpress-iac/master/Wordpress-app-blueprint.png)
 
-* [Create cloudformation stack](https://console.aws.amazon.com/cloudformation/home?region=ap-southeast-2#/stacks/new?stackName=wordpress-app&templateURL=https://s3-ap-southeast-2.amazonaws.com/saurabh-public-artifacts/wordpress-app.template) 
+<h1><b>Templates </b></h1> -
+
+Install application from console - 
+
+1. [Create resources stack](https://console.aws.amazon.com/cloudformation/home?region=ap-southeast-2#/stacks/new?stackName=resources-stack&templateURL=https://s3-ap-southeast-2.amazonaws.com/saurabh-public-artifacts/resources-stack.template) 
+
+2. [Create cloudformation stack](https://console.aws.amazon.com/cloudformation/home?region=ap-southeast-2#/stacks/new?stackName=wordpress-app&templateURL=https://s3-ap-southeast-2.amazonaws.com/saurabh-public-artifacts/app-stack.template) 
