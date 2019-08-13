@@ -55,3 +55,10 @@ commands used - aws configure
 
 3. It will take some to finish the stack deployment, once done execute the command to get WebsiteURL -
    aws cloudformation describe-stacks --stack-name resources-stack --query "Stacks[0].Outputs[?OutputKey=='WebsiteURL'].OutputValue" --output text
+
+<b>Difference between Dev and Prod application stack </b>- 
+
+* Dev stack deploys RDS DB instance in single AZ whereas Prod stack deploys RDS in multi-AZ to create fault tolerant, highly available DB.
+* Dev stack deploys wordpress application in 1 EC2 instance whereas Prod stack deploys wordpress application in 2 EC2 instances.
+* Dev and Prod both stacks have 1 bastian host running in single AZ at any point in time. 
+
