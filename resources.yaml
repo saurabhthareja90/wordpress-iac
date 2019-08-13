@@ -4,8 +4,8 @@
       Type: AWS::EC2::VPC
       Properties:
         CidrBlock: 10.99.0.0/16
-        EnableDnsSupport: 'false'
-        EnableDnsHostnames: 'false'
+        EnableDnsSupport: 'true'
+        EnableDnsHostnames: 'true'
         InstanceTenancy: default
         Tags:
         - Key: Name
@@ -160,21 +160,21 @@
         RouteTableId:
           Ref: SysOpsPrivateRouteTable
     SysOpsNatGateway:
-    Type: AWS::EC2::NatGateway
-    Properties:
-        AllocationId:
-          Fn::GetAtt:
-          - EIP
-          - AllocationId
-        SubnetId:
-          Ref: DMZ2Public
-        Tags:
-        - Key: Name
-          Value: SysOpsNatGateway
+      Type: AWS::EC2::NatGateway
+      Properties:
+          AllocationId:
+            Fn::GetAtt:
+            - EIP
+            - AllocationId
+          SubnetId:
+            Ref: DMZ2Public
+          Tags:
+          - Key: Name
+            Value: SysOpsNatGateway
     EIP:
-    Type: AWS::EC2::EIP
-    Properties:
-        Domain: SysOpsVPC
+      Type: AWS::EC2::EIP
+      Properties:
+          Domain: SysOpsVPC
     PublicRoute:
       Type: AWS::EC2::Route
       Properties:
@@ -223,3 +223,21 @@
       Value: !Ref DMZ2Public
       Export:
         Name: !Sub '${AWS::StackName}-DMZ2PublicSubnet'
+    AppLayer1PrivateSubnet:
+      Description: AppLayer1Private
+      Value: !Ref AppLayer1Private
+      Export:
+        Name: !Sub '${AWS::StackName}-AppLayer1PrivateSubnet'
+    AppLayer2PrivateSubnet:
+      Description: AppLayer2Private
+      Value: !Ref AppLayer2Private
+      Export:
+        Name: !Sub '${AWS::StackName}-AppLayer2PrivateSubnet'
+    AppLayerSubnets:
+      Description: Applayer subnets for ec2 instances
+      Value:  !Join 
+          - ','
+          - - !Ref AppLayer1Private
+            - !Ref AppLayer2Private
+      Export:
+          Name: !Sub "${AWS::StackName}-AppLayerSubnets"

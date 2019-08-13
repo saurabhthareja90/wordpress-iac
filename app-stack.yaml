@@ -6,13 +6,6 @@ Parameters:
     MaxLength: 255
     AllowedPattern: '^[a-zA-Z][-a-zA-Z0-9]*$'
     Default: resources-stack
-  Subnets:
-    Type: 'List<AWS::EC2::Subnet::Id>'
-    Description: The list of SubnetIds in your Virtual Private Cloud (VPC)
-    ConstraintDescription: >-
-      Must be a list of at least two existing subnets associated with at least
-      two different availability zones. They should be residing in the selected
-      Virtual Private Cloud.
   Environment:
     Default: Dev
     Description: Environment in which stacks are being deployed
@@ -129,7 +122,6 @@ Parameters:
     AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
     ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
   DBUser:
-    NoEcho: 'true'
     Default: admin
     Description: The WordPress database admin account username
     Type: String
@@ -437,7 +429,11 @@ Resources:
   ApplicationLoadBalancer:
     Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
     Properties:
-      Subnets: !Ref Subnets
+      Subnets:
+        - !ImportValue 
+            'Fn::Sub': '${ResourcesStackName}-DMZ1PublicSubnet'
+        - !ImportValue 
+            'Fn::Sub': '${ResourcesStackName}-DMZ2PublicSubnet'
   ALBListener:
     Type: 'AWS::ElasticLoadBalancingV2::Listener'
     Properties:
@@ -466,31 +462,39 @@ Resources:
           Value: lb_cookie
         - Key: stickiness.lb_cookie.duration_seconds
           Value: '30'
-  WebServerSecurityGroup:
-    Type: 'AWS::EC2::SecurityGroup'
-    Properties:
-      GroupDescription: >-
-        Enable HTTP access via port 80 locked down to the load balancer + SSH
-        access
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: '80'
-          ToPort: '80'
-          SourceSecurityGroupId: !Select 
-            - 0
-            - !GetAtt 
-              - ApplicationLoadBalancer
-              - SecurityGroups
-        - IpProtocol: tcp
-          FromPort: '22'
-          ToPort: '22'
-          CidrIp: 0.0.0.0/0
-      VpcId: !ImportValue 
-          'Fn::Sub': '${ResourcesStackName}-SysOpsVPC'
-  WebServerGroup:
+  WebServerSG:
+      Type: 'AWS::EC2::SecurityGroup'
+      Properties:
+        GroupDescription: >-
+          Enable HTTP access via port 80 locked down to the load balancer + SSH
+          access
+        SecurityGroupIngress:
+          - IpProtocol: tcp
+            FromPort: '80'
+            ToPort: '80'
+            SourceSecurityGroupId: !Select 
+              - 0
+              - !GetAtt 
+                - ApplicationLoadBalancer
+                - SecurityGroups
+          - IpProtocol: tcp
+            FromPort: '22'
+            ToPort: '22'
+            SourceSecurityGroupId: !Ref BastianHostSG
+        VpcId: !ImportValue 
+            'Fn::Sub': '${ResourcesStackName}-SysOpsVPC'
+        Tags: 
+          - 
+            Key: Name
+            Value: WebServerSG
+  WebServerASG:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     Properties:
-      VPCZoneIdentifier: !Ref Subnets
+      VPCZoneIdentifier:
+        - !ImportValue 
+            'Fn::Sub': '${ResourcesStackName}-AppLayer1PrivateSubnet'
+        - !ImportValue 
+            'Fn::Sub': '${ResourcesStackName}-AppLayer2PrivateSubnet'
       LaunchConfigurationName: !Ref LaunchConfig
       MinSize: '1'
       MaxSize: '5'
@@ -619,7 +623,7 @@ Resources:
           - Arch
       InstanceType: !Ref InstanceType
       SecurityGroups:
-        - !Ref WebServerSecurityGroup
+        - !Ref WebServerSG
       KeyName: !Ref KeyName
       UserData: !Base64 
         'Fn::Join':
@@ -641,12 +645,56 @@ Resources:
             - '/opt/aws/bin/cfn-signal -e $? '
             - '         --stack '
             - !Ref 'AWS::StackName'
-            - '         --resource WebServerGroup '
+            - '         --resource WebServerASG '
             - '         --region '
             - !Ref 'AWS::Region'
             - |+
-
-  DBEC2SecurityGroup:
+  BastianHostSG:
+      Type: 'AWS::EC2::SecurityGroup'
+      Properties:
+        GroupDescription: >-
+          BastianHost SG
+        SecurityGroupIngress:
+          - IpProtocol: tcp
+            FromPort: '22'
+            ToPort: '22'
+            CidrIp: 0.0.0.0/0
+        VpcId: !ImportValue 
+            'Fn::Sub': '${ResourcesStackName}-SysOpsVPC'
+        Tags: 
+          - 
+            Key: Name
+            Value: BastianHostSG
+  BastianHostASG:
+    Type: 'AWS::AutoScaling::AutoScalingGroup'
+    Properties:
+      VPCZoneIdentifier:
+        - !ImportValue 
+            'Fn::Sub': '${ResourcesStackName}-DMZ1PublicSubnet'
+        - !ImportValue 
+            'Fn::Sub': '${ResourcesStackName}-DMZ2PublicSubnet'
+      LaunchConfigurationName: !Ref BastianHostLC
+      MinSize: '1'
+      MaxSize: '1'
+      DesiredCapacity: '1'
+  BastianHostLC:
+    Type: 'AWS::AutoScaling::LaunchConfiguration'
+    Properties:
+      AssociatePublicIpAddress: true
+      ImageId: !Ref LatestAmiId
+      InstanceType: 't2.micro'
+      SecurityGroups:
+        - !Ref BastianHostSG
+      KeyName: !Ref KeyName
+      UserData: !Base64 
+        'Fn::Join':
+          - ''
+          - - |
+              #!/bin/bash -xe
+            - |
+              sudo yum update -y
+            - |+
+  DBSG:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
       GroupDescription: Open database for access
@@ -654,9 +702,13 @@ Resources:
         - IpProtocol: tcp
           FromPort: '3306'
           ToPort: '3306'
-          SourceSecurityGroupId: !Ref WebServerSecurityGroup
+          SourceSecurityGroupId: !Ref WebServerSG
       VpcId: !ImportValue 
           'Fn::Sub': '${ResourcesStackName}-SysOpsVPC'
+      Tags: 
+        - 
+          Key: Name
+          Value: DBSG
   DBInstance:
     Type: 'AWS::RDS::DBInstance'
     DeletionPolicy: "Snapshot"
@@ -672,7 +724,7 @@ Resources:
       AllocatedStorage: !FindInMap [EnvironmentSettings, !Ref Environment, DBAllocatedStorage]
       VPCSecurityGroups:
         - !GetAtt 
-          - DBEC2SecurityGroup
+          - DBSG
           - GroupId
 Outputs:
   WebsiteURL:
