@@ -22,7 +22,7 @@ commands used - aws configure
 
 <h1><b>Deploy wordpress application </b></h1>
 
-Install application from console using the templates - 
+<b>Install application from console using the templates </b>- 
 
 1. [Create resources stack](https://console.aws.amazon.com/cloudformation/home?region=ap-southeast-2#/stacks/new?stackName=resources-stack&templateURL=https://s3-ap-southeast-2.amazonaws.com/saurabh-public-artifacts/resources-stack.template)
     Click on the the link above to install prerequisite resources in AWS account. Clicking on the link above will take you through to cloudformation console, follow the steps in console and create stack. Resources stack creates underlying networking resources e.g. - VPC, Subnets, RouteTables, InternetGateway, NAT Gateway etc. 
@@ -45,10 +45,13 @@ Install application from console using the templates -
 3. Once app stack creation is finished, go to output section of app-stack and go to WebsiteURL mentioned, it should load the        highly scalable, highly available wordpress website.
 
 
-Install application using AWSCli - 
+<b>Install application using AWSCli </b>- 
 
 1. Deploy resources stack -
     aws cloudformation create-stack --stack-name resources-stack --template-body file://resources.yaml
 
 2. Deploy application stack -
     aws cloudformation create-stack --stack-name app-stack --template-body file://resources.yaml --parameters ParameterKey=KeyName,ParameterValue=<SSHKey> ParameterKey=DBClass,ParameterValue=<DBClass> ParameterKey=DBName,ParameterValue=<DBName> ParameterKey=DBUser,ParameterValue=<DBUser> ParameterKey=DBPassword,ParameterValue=<DBPassword> ParameterKey=InstanceType,ParameterValue=<InstanceType> ParameterKey=ResourcesStackName,ParameterValue=<ResourcesStackName> 
+
+3. It will take some to finish the stack deployment, once done execute the command to get WebsiteURL -
+   aws cloudformation describe-stacks --stack-name resources-stack --query "Stacks[0].Outputs[?OutputKey=='WebsiteURL'].OutputValue" --output text
