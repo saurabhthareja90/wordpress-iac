@@ -24,11 +24,9 @@ commands used - aws configure
 
 <b>Install application from console using the templates </b>- 
 
-1. [Create resources stack](https://console.aws.amazon.com/cloudformation/home?region=ap-southeast-2#/stacks/new?stackName=resources-stack&templateURL=https://s3-ap-southeast-2.amazonaws.com/saurabh-public-artifacts/resources-stack.template)
-    Click on the the link above to install prerequisite resources in AWS account. Clicking on the link above will take you through to cloudformation console, follow the steps in console and create stack. Resources stack creates underlying networking resources e.g. - VPC, Subnets, RouteTables, InternetGateway, NAT Gateway etc. 
+1. Click on the the link - [Create resources stack](https://console.aws.amazon.com/cloudformation/home?region=ap-southeast-2#/stacks/new?stackName=resources-stack&templateURL=https://s3-ap-southeast-2.amazonaws.com/saurabh-public-artifacts/resources-stack.template) to deploy prerequisite resources in AWS account. Clicking on the link above will take you through to cloudformation console, follow the steps in console and create stack. Resources stack creates underlying networking resources e.g. - VPC, Subnets, RouteTables, InternetGateway, NAT Gateway etc. 
 
-2. [Create app stack](https://console.aws.amazon.com/cloudformation/home?region=ap-southeast-2#/stacks/new?stackName=app-stack&templateURL=https://s3-ap-southeast-2.amazonaws.com/saurabh-public-artifacts/app-stack.template) 
-    Once resources-stack is finished creating, click on the link above to create app stack. App stack creates application resources e.g. - EC2 instances, Launch Configurations, ASG, SecurityGroups, ALB, TargetGroup, RDS etc.
+2. Once resources-stack is finished creating, click on the link - [Create app stack](https://console.aws.amazon.com/cloudformation/home?region=ap-southeast-2#/stacks/new?stackName=app-stack&templateURL=https://s3-ap-southeast-2.amazonaws.com/saurabh-public-artifacts/app-stack.template) to create app stack. App stack creates application resources e.g. - EC2 instances, Launch Configurations, ASG, SecurityGroups, ALB, TargetGroup, RDS etc.
 
     Application stack CloudFormation template lets you select certain application parameters as shown below - 
 
