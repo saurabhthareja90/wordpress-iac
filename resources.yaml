@@ -1,204 +1,225 @@
-AWSTemplateFormatVersion: 2010-09-09
-Resources:
-  SysOpsVPC:
-    Type: AWS::EC2::VPC
+  AWSTemplateFormatVersion: 2010-09-09
+  Resources:
+    SysOpsVPC:
+      Type: AWS::EC2::VPC
+      Properties:
+        CidrBlock: 10.99.0.0/16
+        EnableDnsSupport: 'false'
+        EnableDnsHostnames: 'false'
+        InstanceTenancy: default
+        Tags:
+        - Key: Name
+          Value: SysOpsVPC
+    SysOpsigw:
+      Type: AWS::EC2::InternetGateway
+      Properties:
+        Tags:
+        - Key: Name
+          Value: SysOpsigw
+    AttachGateway:
+      Type: AWS::EC2::VPCGatewayAttachment
+      Properties:
+        VpcId:
+          Ref: SysOpsVPC
+        InternetGatewayId:
+          Ref: SysOpsigw
+    DMZ1Public: 
+      Type: "AWS::EC2::Subnet"
+      Properties: 
+        VpcId: 
+          !Ref SysOpsVPC
+        CidrBlock: 10.99.1.0/24
+        AvailabilityZone: 
+          Fn::Select: 
+            - 0
+            - Fn::GetAZs: ""
+        Tags:
+        - Key: Name
+          Value: DMZ1Public
+    DMZ2Public: 
+      Type: "AWS::EC2::Subnet"
+      Properties: 
+        VpcId: 
+          !Ref SysOpsVPC
+        CidrBlock: 10.99.2.0/24
+        AvailabilityZone: 
+          Fn::Select: 
+            - 1
+            - Fn::GetAZs: ""
+        Tags:
+        - Key: Name
+          Value: DMZ2Public
+    AppLayer1Private: 
+      Type: "AWS::EC2::Subnet"
+      Properties: 
+        VpcId: 
+          !Ref SysOpsVPC
+        CidrBlock: 10.99.11.0/24
+        AvailabilityZone: 
+          Fn::Select: 
+            - 0
+            - Fn::GetAZs: ""
+        Tags:
+        - Key: Name
+          Value: AppLayer1Private
+    AppLayer2Private: 
+      Type: "AWS::EC2::Subnet"
+      Properties: 
+        VpcId: 
+          !Ref SysOpsVPC
+        CidrBlock: 10.99.12.0/24
+        AvailabilityZone: 
+          Fn::Select: 
+            - 1
+            - Fn::GetAZs: ""
+        Tags:
+        - Key: Name
+          Value: AppLayer2Private
+    DBLayer1Private: 
+      Type: "AWS::EC2::Subnet"
+      Properties: 
+        VpcId: 
+          !Ref SysOpsVPC
+        CidrBlock: 10.99.21.0/24
+        AvailabilityZone: 
+          Fn::Select: 
+            - 0
+            - Fn::GetAZs: ""
+        Tags:
+        - Key: Name
+          Value: DBLayer1Private
+    DBLayer2Private: 
+      Type: "AWS::EC2::Subnet"
+      Properties: 
+        VpcId: 
+          !Ref SysOpsVPC
+        CidrBlock: 10.99.22.0/24
+        AvailabilityZone: 
+          Fn::Select: 
+            - 1
+            - Fn::GetAZs: ""
+        Tags:
+        - Key: Name
+          Value: DBLayer2Private
+    SysOpsPublicRouteTable:
+      Type: AWS::EC2::RouteTable
+      Properties:
+        VpcId:  
+          Ref: SysOpsVPC
+        Tags:
+        - Key: Name
+          Value: SysOpsPublicRouteTable
+    SysOpsPrivateRouteTable:
+      Type: AWS::EC2::RouteTable
+      Properties:
+        VpcId:  
+          Ref: SysOpsVPC
+        Tags:
+        - Key: Name
+          Value: SysOpsPrivateRouteTable
+    SysOpsSubnetPublicRouteTableAssociation1:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId:
+          Ref: DMZ1Public
+        RouteTableId:
+          Ref: SysOpsPublicRouteTable
+    SysOpsSubnetPublicRouteTableAssociation2:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId:
+          Ref: DMZ2Public
+        RouteTableId:
+          Ref: SysOpsPublicRouteTable
+    SysOpsSubnetPrivateRouteTableAssociation1:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId:
+          Ref: AppLayer2Private
+        RouteTableId:
+          Ref: SysOpsPrivateRouteTable
+    SysOpsSubnetPrivateRouteTableAssociation2:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId:
+          Ref: AppLayer1Private
+        RouteTableId:
+          Ref: SysOpsPrivateRouteTable
+    SysOpsSubnetPrivateRouteTableAssociation3:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId:
+          Ref: DBLayer1Private
+        RouteTableId:
+          Ref: SysOpsPrivateRouteTable
+    SysOpsSubnetPrivateRouteTableAssociation4:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId:
+          Ref: DBLayer2Private
+        RouteTableId:
+          Ref: SysOpsPrivateRouteTable
+    SysOpsNatGateway:
+    Type: AWS::EC2::NatGateway
     Properties:
-      CidrBlock: 10.99.0.0/16
-      EnableDnsSupport: 'false'
-      EnableDnsHostnames: 'false'
-      InstanceTenancy: dedicated
-      Tags:
-      - Key: Name
-        Value: SysOpsVPC
-  SysOpsigw:
-    Type: AWS::EC2::InternetGateway
+        AllocationId:
+          Fn::GetAtt:
+          - EIP
+          - AllocationId
+        SubnetId:
+          Ref: DMZ2Public
+        Tags:
+        - Key: Name
+          Value: SysOpsNatGateway
+    EIP:
+    Type: AWS::EC2::EIP
     Properties:
-      Tags:
-      - Key: Name
-        Value: SysOpsigw
-  AttachGateway:
-    Type: AWS::EC2::VPCGatewayAttachment
-    Properties:
-      VpcId:
-        Ref: SysOpsVPC
-      InternetGatewayId:
-        Ref: SysOpsigw
-  DMZ1Public: 
-    Type: "AWS::EC2::Subnet"
-    Properties: 
-      VpcId: 
-        !Ref SysOpsVPC
-      CidrBlock: 10.99.1.0/24
-      AvailabilityZone: 
-        Fn::Select: 
-          - 0
-          - Fn::GetAZs: ""
-      Tags:
-      - Key: Name
-        Value: DMZ1Public
-  DMZ2Public: 
-    Type: "AWS::EC2::Subnet"
-    Properties: 
-      VpcId: 
-        !Ref SysOpsVPC
-      CidrBlock: 10.99.2.0/24
-      AvailabilityZone: 
-        Fn::Select: 
-          - 1
-          - Fn::GetAZs: ""
-      Tags:
-      - Key: Name
-        Value: DMZ2Public
-  AppLayer1Private: 
-    Type: "AWS::EC2::Subnet"
-    Properties: 
-      VpcId: 
-        !Ref SysOpsVPC
-      CidrBlock: 10.99.11.0/24
-      AvailabilityZone: 
-        Fn::Select: 
-          - 0
-          - Fn::GetAZs: ""
-      Tags:
-      - Key: Name
-        Value: AppLayer1Private
-  AppLayer2Private: 
-    Type: "AWS::EC2::Subnet"
-    Properties: 
-      VpcId: 
-        !Ref SysOpsVPC
-      CidrBlock: 10.99.12.0/24
-      AvailabilityZone: 
-        Fn::Select: 
-          - 1
-          - Fn::GetAZs: ""
-      Tags:
-      - Key: Name
-        Value: AppLayer2Private
-  DBLayer1Private: 
-    Type: "AWS::EC2::Subnet"
-    Properties: 
-      VpcId: 
-        !Ref SysOpsVPC
-      CidrBlock: 10.99.21.0/24
-      AvailabilityZone: 
-        Fn::Select: 
-          - 0
-          - Fn::GetAZs: ""
-      Tags:
-      - Key: Name
-        Value: DBLayer1Private
-  DBLayer2Private: 
-    Type: "AWS::EC2::Subnet"
-    Properties: 
-      VpcId: 
-        !Ref SysOpsVPC
-      CidrBlock: 10.99.22.0/24
-      AvailabilityZone: 
-        Fn::Select: 
-          - 1
-          - Fn::GetAZs: ""
-      Tags:
-      - Key: Name
-        Value: DBLayer2Private
-  SysOpsPublicRouteTable:
-    Type: AWS::EC2::RouteTable
-    Properties:
-      VpcId:  
-        Ref: SysOpsVPC
-      Tags:
-      - Key: Name
-        Value: SysOpsPublicRouteTable
-  SysOpsPrivateRouteTable:
-    Type: AWS::EC2::RouteTable
-    Properties:
-      VpcId:  
-        Ref: SysOpsVPC
-      Tags:
-      - Key: Name
-        Value: SysOpsPrivateRouteTable
-  SysOpsSubnetPublicRouteTableAssociation1:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId:
-        Ref: DMZ1Public
-      RouteTableId:
-        Ref: SysOpsPublicRouteTable
-  SysOpsSubnetPublicRouteTableAssociation2:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId:
-        Ref: DMZ2Public
-      RouteTableId:
-        Ref: SysOpsPublicRouteTable
-  SysOpsSubnetPrivateRouteTableAssociation1:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId:
-        Ref: AppLayer2Private
-      RouteTableId:
-        Ref: SysOpsPrivateRouteTable
-  SysOpsSubnetPrivateRouteTableAssociation2:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId:
-        Ref: AppLayer1Private
-      RouteTableId:
-        Ref: SysOpsPrivateRouteTable
-  SysOpsSubnetPrivateRouteTableAssociation3:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId:
-        Ref: DBLayer1Private
-      RouteTableId:
-        Ref: SysOpsPrivateRouteTable
-  SysOpsSubnetPrivateRouteTableAssociation4:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId:
-        Ref: DBLayer2Private
-      RouteTableId:
-        Ref: SysOpsPrivateRouteTable
-  SysOpsNatGateway:
-   Type: AWS::EC2::NatGateway
-   Properties:
-      AllocationId:
-         Fn::GetAtt:
-         - EIP
-         - AllocationId
-      SubnetId:
-         Ref: DMZ2Public
-      Tags:
-      - Key: Name
-        Value: SysOpsNatGateway
-  EIP:
-   Type: AWS::EC2::EIP
-   Properties:
-      Domain: SysOpsVPC
-  PublicRoute:
-    Type: AWS::EC2::Route
-    Properties:
-       RouteTableId:
-         Ref: SysOpsPublicRouteTable
-       DestinationCidrBlock: 0.0.0.0/0
-       GatewayId:
-         Ref: SysOpsigw
-  PrivateRoute:
-    Type: AWS::EC2::Route
-    Properties:
-       RouteTableId:
-         Ref: SysOpsPrivateRouteTable
-       DestinationCidrBlock: 0.0.0.0/0
-       NatGatewayId:
-         Ref: SysOpsNatGateway
-  SysOpsDBSubnetGroup:
-    Type: "AWS::RDS::DBSubnetGroup"
-    Properties: 
-      DBSubnetGroupDescription: 'RDS subnet group for wordpress db'
-      SubnetIds: 
-        - Ref: DBLayer1Private
-        - Ref: DBLayer2Private
-      Tags: 
-        - 
-          Key: Name
-          Value: SysOpsDBSubnetGroup
+        Domain: SysOpsVPC
+    PublicRoute:
+      Type: AWS::EC2::Route
+      Properties:
+        RouteTableId:
+          Ref: SysOpsPublicRouteTable
+        DestinationCidrBlock: 0.0.0.0/0
+        GatewayId:
+          Ref: SysOpsigw
+    PrivateRoute:
+      Type: AWS::EC2::Route
+      Properties:
+        RouteTableId:
+          Ref: SysOpsPrivateRouteTable
+        DestinationCidrBlock: 0.0.0.0/0
+        NatGatewayId:
+          Ref: SysOpsNatGateway
+    SysOpsDBSubnetGroup:
+      Type: "AWS::RDS::DBSubnetGroup"
+      Properties: 
+        DBSubnetGroupDescription: 'RDS subnet group for wordpress db'
+        SubnetIds: 
+          - Ref: DBLayer1Private
+          - Ref: DBLayer2Private
+        Tags: 
+          - 
+            Key: Name
+            Value: SysOpsDBSubnetGroup
+  Outputs:
+    SysOpsDBSubnetGroup:
+      Description: DBSubnetGroup
+      Value: !Ref SysOpsDBSubnetGroup
+      Export:
+        Name: !Sub '${AWS::StackName}-SysOpsDBSubnetGroup'
+    SysOpsVPC:
+      Description: VPC
+      Value: !Ref SysOpsVPC
+      Export:
+        Name: !Sub '${AWS::StackName}-SysOpsVPC'
+    DMZ1PublicSubnet:
+      Description: DMZ1Public
+      Value: !Ref DMZ1Public
+      Export:
+        Name: !Sub '${AWS::StackName}-DMZ1PublicSubnet'
+    DMZ2PublicSubnet:
+      Description: DMZ2Public
+      Value: !Ref DMZ2Public
+      Export:
+        Name: !Sub '${AWS::StackName}-DMZ2PublicSubnet'

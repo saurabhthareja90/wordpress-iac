@@ -1,9 +1,11 @@
 AWSTemplateFormatVersion: 2010-09-09
 Parameters:
-  VpcId:
-    Type: 'AWS::EC2::VPC::Id'
-    Description: VpcId of your existing Virtual Private Cloud (VPC)
-    ConstraintDescription: Must be the VPC Id of an existing Virtual Private Cloud.
+  ResourcesStackName:
+    Type: String
+    MinLength: 1
+    MaxLength: 255
+    AllowedPattern: '^[a-zA-Z][-a-zA-Z0-9]*$'
+    Default: resources-stack
   Subnets:
     Type: 'List<AWS::EC2::Subnet::Id>'
     Description: The list of SubnetIds in your Virtual Private Cloud (VPC)
@@ -455,7 +457,8 @@ Resources:
       Port: 80
       Protocol: HTTP
       UnhealthyThresholdCount: 5
-      VpcId: !Ref VpcId
+      VpcId: !ImportValue 
+          'Fn::Sub': '${ResourcesStackName}-SysOpsVPC'
       TargetGroupAttributes:
         - Key: stickiness.enabled
           Value: 'true'
@@ -482,7 +485,8 @@ Resources:
           FromPort: '22'
           ToPort: '22'
           CidrIp: 0.0.0.0/0
-      VpcId: !Ref VpcId
+      VpcId: !ImportValue 
+          'Fn::Sub': '${ResourcesStackName}-SysOpsVPC'
   WebServerGroup:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     Properties:
@@ -651,13 +655,15 @@ Resources:
           FromPort: '3306'
           ToPort: '3306'
           SourceSecurityGroupId: !Ref WebServerSecurityGroup
-      VpcId: !Ref VpcId
+      VpcId: !ImportValue 
+          'Fn::Sub': '${ResourcesStackName}-SysOpsVPC'
   DBInstance:
     Type: 'AWS::RDS::DBInstance'
     DeletionPolicy: "Snapshot"
     Properties:
       DBName: !Ref DBName
-      DBSubnetGroupName: SysOpsDBSubnetGroup
+      DBSubnetGroupName: !ImportValue 
+            'Fn::Sub': '${ResourcesStackName}-SysOpsDBSubnetGroup'
       Engine: MySQL
       MultiAZ: !FindInMap [EnvironmentSettings, !Ref Environment, MultiAZDatabase]
       MasterUsername: !Ref DBUser
