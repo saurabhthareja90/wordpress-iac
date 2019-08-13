@@ -20,7 +20,7 @@ commands used - aws configure
 
 ![alt text](https://raw.githubusercontent.com/saurabhthareja90/wordpress-iac/master/Wordpress-app-blueprint.png)
 
-<h1><b>Templates </b></h1> -
+<h1><b>Deploy wordpress application </b></h1>
 
 Install application from console using the templates - 
 
@@ -43,3 +43,12 @@ Install application from console using the templates -
     *   ResourcesStackName  - resources stack name, default is set to resources-stack.
 
 3. Once app stack creation is finished, go to output section of app-stack and go to WebsiteURL mentioned, it should load the        highly scalable, highly available wordpress website.
+
+
+Install application using AWSCli - 
+
+1. Deploy resources stack -
+    aws cloudformation create-stack --stack-name resources-stack --template-body file://resources.yaml
+
+2. Deploy application stack -
+    aws cloudformation create-stack --stack-name app-stack --template-body file://resources.yaml --parameters ParameterKey=KeyName,ParameterValue=<SSHKey> ParameterKey=DBClass,ParameterValue=<DBClass> ParameterKey=DBName,ParameterValue=<DBName> ParameterKey=DBUser,ParameterValue=<DBUser> ParameterKey=DBPassword,ParameterValue=<DBPassword> ParameterKey=InstanceType,ParameterValue=<InstanceType> ParameterKey=ResourcesStackName,ParameterValue=<ResourcesStackName> 
