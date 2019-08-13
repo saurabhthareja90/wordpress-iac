@@ -426,9 +426,27 @@ Mappings:
       HVM64: ami-0f7937761741dc640
       HVMG2: NOT_SUPPORTED
 Resources:
+  ALBSG:
+      Type: 'AWS::EC2::SecurityGroup'
+      Properties:
+        GroupDescription: >-
+          Enable HTTP access via port 80 
+        SecurityGroupIngress:
+          - IpProtocol: tcp
+            FromPort: '80'
+            ToPort: '80'
+            CidrIp: '0.0.0.0/0'
+        VpcId: !ImportValue 
+            'Fn::Sub': '${ResourcesStackName}-SysOpsVPC'
+        Tags: 
+          - 
+            Key: Name
+            Value: ALBSG
   ApplicationLoadBalancer:
     Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
     Properties:
+      SecurityGroups: 
+        - !Ref ALBSG
       Subnets:
         - !ImportValue 
             'Fn::Sub': '${ResourcesStackName}-DMZ1PublicSubnet'
