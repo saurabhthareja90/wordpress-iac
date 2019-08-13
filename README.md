@@ -34,12 +34,12 @@ Install application from console using the templates -
 
     ![alt text](https://raw.githubusercontent.com/saurabhthareja90/wordpress-iac/master/parameters.png)
 
-    DBClass             - DB instance class, default is set to t2.small
-    DBName              - wordpress DB name, default is set to wordpressdb
-    DBUser              - DB username, detault is set to admin
-    DBPassword          - password to connect to RDS DB, default is set to admin123
-    KeyName             - SSH keypair for EC2 instances.
-    InstanceType        - EC2 InstanceType, default is set to t2.small
-    ResourcesStackName  - resources stack name, default is set to resources-stack.
+    *   DBClass             - DB instance class, default is set to t2.small
+    *   DBName              - wordpress DB name, default is set to wordpressdb
+    *   DBUser              - DB username, detault is set to admin
+    *   DBPassword          - password to connect to RDS DB, default is set to admin123
+    *   KeyName             - SSH keypair for EC2 instances.
+    *   InstanceType        - EC2 InstanceType, default is set to t2.small
+    *   ResourcesStackName  - resources stack name, default is set to resources-stack.
 
 3. Once app stack creation is finished, go to output section of app-stack and go to WebsiteURL mentioned, it should load the        highly scalable, highly available wordpress website.
