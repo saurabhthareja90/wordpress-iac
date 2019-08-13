@@ -1,4 +1,4 @@
-# wordpress-iac
+# wordpress-iasc
 Installs and deploys WordPress into Dev and Prod environments on to Amazon EC2 instances in an Auto Scaling group with a multi-AZ Amazon RDS database instance for storage in Prod environment and single AZ RDS database instance in dev environment.
 
 <h1><b>Prerequisites</b></h1>
