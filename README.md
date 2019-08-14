@@ -18,7 +18,10 @@ commands used - aws configure
 
 <h1><b>Architecture Diagram</b></h1>
 
-![alt text](https://raw.githubusercontent.com/saurabhthareja90/wordpress-iac/master/Wordpress-app-blueprint.png)
+![Blueprint](https://raw.githubusercontent.com/saurabhthareja90/wordpress-iac/master/Wordpress-app-blueprint.png)
+
+
+![Lucid chart diagram](https://raw.githubusercontent.com/saurabhthareja90/wordpress-iac/master/SysOpsVPC.png)
 
 <h1><b>Deploy wordpress application </b></h1>
 
