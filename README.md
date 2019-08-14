@@ -12,9 +12,7 @@ Note: Download the CSV file generated for the IAM user as contains the Secret Ac
 
 commands used - aws configure
 
-4. Latest version of Ansible is installed by following instructions provided on - https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html
-
-5. Create an ssh keypair in AWS account under EC2 -> Network & Security -> Key Pairs which will be required to connect to EC2 instances later. Name the key - amazon-servers, download.
+4. Create an ssh keypair in AWS account under EC2 -> Network & Security -> Key Pairs which will be required to connect to EC2 instances later. Name the key - amazon-servers, download.
 
 <h1><b>Architecture Diagram</b></h1>
 
