@@ -14,6 +14,7 @@ commands used - aws configure
 
 4. Create an ssh keypair in AWS account under EC2 -> Network & Security -> Key Pairs which will be required to connect to EC2 instances later. Name the key - amazon-servers, download.
 
+
 <h1><b>Architecture Diagram</b></h1>
 
 ![Blueprint](https://raw.githubusercontent.com/saurabhthareja90/wordpress-iac/master/Wordpress-app-blueprint.png)
