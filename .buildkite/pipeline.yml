@@ -1,7 +1,7 @@
 steps:
-  - label: Example Test
-    command: echo "Hello!"
-  - block: "Request Release"
+  - label: Install yaml lint
+    command: pip install --user yamllint
+  - block: "Blocking build"
     fields:
       - text: "Code Name"
         key: "release-name"
@@ -9,7 +9,7 @@ steps:
   - wait
 
   - label: "Test %n"
-    command: make test
+    command: yamllint .
     parallelism: 300
     
   - label: Post block step
