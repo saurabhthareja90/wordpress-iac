@@ -1,3 +1,9 @@
 steps:
   - label: Example Test
     command: echo "Hello!"
+  - block: "Request Release"
+    fields:
+      - text: "Code Name"
+        key: "release-name"
+  - label: Post block step
+    command: echo "Done unblocking!"
