@@ -5,5 +5,12 @@ steps:
     fields:
       - text: "Code Name"
         key: "release-name"
+        
+  - wait
+
+  - label: "Test %n"
+    command: make test
+    parallelism: 300
+    
   - label: Post block step
     command: echo "Done unblocking!"
