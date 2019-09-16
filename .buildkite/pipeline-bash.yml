@@ -32,7 +32,8 @@ steps:
     command: "broken.sh"
     skip: "Currently broken and needs to be fixed"
 
-  - wait
+  - wait: ~
+    continue_on_failure: true
 
   - label: ":shipit: Deploy"
     command: "deploy.sh"
@@ -44,7 +45,8 @@ steps:
         allowed: false
         reason: "Sorry, you can't retry a deployment"
 
-  - wait
+  - wait: ~
+    continue_on_failure: true
 
   - label: "Smoke test"
     command: "smoke-test.sh"
