@@ -7,9 +7,6 @@ steps:
     branches: "master"
     env:
       NODE_ENV: "test"
-    agents:
-      npm: "true"
-      queue: "tests"
     artifact_paths:
       - "logs/**/*"
       - "coverage/**/*"
