@@ -13,7 +13,6 @@ steps:
     artifact_paths:
       - "logs/**/*"
       - "coverage/**/*"
-    parallelism: 5
     timeout_in_minutes: 3
     retry:
       automatic:
